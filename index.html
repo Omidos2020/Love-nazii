@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1b1025">
+<title>برای نازی ❤️</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top,#51264e,#1b1025 65%);color:#fff;font-family:Tahoma,Arial,sans-serif;overflow:hidden}.card{width:min(100%,520px);padding:38px 26px;text-align:center;border:1px solid #ffffff25;border-radius:28px;background:#ffffff10;backdrop-filter:blur(12px);box-shadow:0 20px 70px #0005}.heart{font-size:64px;animation:pulse 1.3s infinite}h1{font-size:clamp(27px,7vw,38px);margin:12px 0;color:#ffd6e7}p{line-height:2.2;color:#f7eaf2;font-size:17px}.btn{border:0;border-radius:999px;padding:14px 25px;background:linear-gradient(90deg,#ff6b9d,#c85bda);color:white;font-size:16px;font-weight:bold;cursor:pointer;margin-top:12px}.hidden{display:none;margin-top:22px;padding:18px;border-radius:18px;background:#ffffff12;color:#ffe2ee;line-height:2.2}.small{font-size:12px;color:#d6bdd0;margin-top:26px}@keyframes pulse{50%{transform:scale(1.15)}}.spark{position:fixed;bottom:-30px;color:#ff9fc4;opacity:.55;animation:rise linear infinite;pointer-events:none}@keyframes rise{to{transform:translateY(-110vh) rotate(360deg);opacity:0}}
+</style>
+</head>
+<body>
+<main class="card">
+<div class="heart">❤️</div>
+<h1>برای نازی</h1>
+<p>بعضی آدم‌ها قشنگیِ زندگی رو بیشتر می‌کنن…<br>تو یکی از همون آدم‌هایی.</p>
+<button class="btn" id="reveal">یه حرف از دلم دارم…</button>
+<div class="hidden" id="message">نازی جان،<br>بودنت برای من یه حس قشنگ و خاصه. امیدوارم همیشه لبخند روی لبت باشه و بدونی که چقدر عزیزی. ❤️</div>
+<div class="small">با عشق، فقط برای تو ✨</div>
+</main>
+<script>
+document.getElementById('reveal').addEventListener('click',()=>{document.getElementById('message').classList.toggle('hidden');document.getElementById('reveal').textContent='❤️'});
+for(let i=0;i<18;i++){const s=document.createElement('span');s.className='spark';s.textContent='♥';s.style.left=Math.random()*100+'vw';s.style.animationDuration=(7+Math.random()*9)+'s';s.style.animationDelay=(-Math.random()*12)+'s';s.style.fontSize=(12+Math.random()*20)+'px';document.body.appendChild(s)}
+</script>
+</body>
+</html>
