@@ -1,0 +1,43 @@
+name: Build Dual Control APKs
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "DualControl/**"
+      - ".github/workflows/dualcontrol-android.yml"
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Build both debug APKs
+        working-directory: DualControl
+        run: gradle --no-daemon :agent:assembleDebug :controller:assembleDebug
+
+      - name: Upload APK files
+        uses: actions/upload-artifact@v4
+        with:
+          name: DualControl-Android10-APKs
+          path: |
+            DualControl/agent/build/outputs/apk/debug/agent-debug.apk
+            DualControl/controller/build/outputs/apk/debug/controller-debug.apk
+          if-no-files-found: error
