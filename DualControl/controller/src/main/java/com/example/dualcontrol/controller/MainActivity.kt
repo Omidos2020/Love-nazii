@@ -16,6 +16,7 @@ class MainActivity : Activity() {
  private lateinit var result:TextView
  private var selectedFile:Uri?=null
  private var selectedName=""
+ private lateinit var sendButton:Button
 
  override fun onCreate(savedInstanceState:Bundle?) {
   super.onCreate(savedInstanceState)
@@ -27,8 +28,8 @@ class MainActivity : Activity() {
   result=TextView(this).apply { text="برای شروع، هر دو گوشی باید به یک شبکه Wi-Fi وصل باشند."; textSize=16f }
   val connect=Button(this).apply { text="بررسی اتصال" }
   val choose=Button(this).apply { text="انتخاب فایل از این گوشی" }
-  val send=Button(this).apply { text="ارسال فایل به گوشی اول"; isEnabled=false }
-  layout.addView(ip); layout.addView(pin); layout.addView(connect); layout.addView(choose); layout.addView(send); layout.addView(result)
+  sendButton=Button(this).apply { text="ارسال فایل به گوشی اول"; isEnabled=false }
+  layout.addView(ip); layout.addView(pin); layout.addView(connect); layout.addView(choose); layout.addView(sendButton); layout.addView(result)
   setContentView(ScrollView(this).apply { addView(layout) })
 
   connect.setOnClickListener { runRequest(connect,"در حال بررسی اتصال...") {
@@ -41,23 +42,29 @@ class MainActivity : Activity() {
    val intent=Intent(Intent.ACTION_OPEN_DOCUMENT).apply { type="*/*"; addCategory(Intent.CATEGORY_OPENABLE) }
    startActivityForResult(intent,41)
   }
-  send.setOnClickListener {
+  sendButton.setOnClickListener {
    val uri=selectedFile ?: return@setOnClickListener
-   runRequest(send,"در حال ارسال فایل...") {
+   runRequest(sendButton,"در حال ارسال فایل...") {
     val mime=contentResolver.getType(uri) ?: "application/octet-stream"
     val connection=URL(endpoint("/upload")).openConnection() as HttpURLConnection
     connection.connectTimeout=10000; connection.readTimeout=30000
     connection.requestMethod="POST"; connection.doOutput=true
     connection.setRequestProperty("Content-Type",mime)
     connection.setRequestProperty("X-File-Name",URLEncoder.encode(selectedName,"UTF-8"))
-    val length=contentResolver.openAssetFileDescriptor(uri,"r")?.use { it.length } ?: -1L
-    if(length>=0) connection.setFixedLengthStreamingMode(length) else connection.setChunkedStreamingMode(16*1024)
-    contentResolver.openInputStream(uri)?.use { input ->
-     connection.outputStream.use { output ->
-      val buffer=ByteArray(16*1024)
-      while(true) { val n=input.read(buffer); if(n<0) break; output.write(buffer,0,n) }
+    val temp=java.io.File.createTempFile("dualcontrol_upload_",".bin",cacheDir)
+    try {
+     contentResolver.openInputStream(uri)?.use { input -> temp.outputStream().use { output -> input.copyTo(output) } }
+      ?: throw IllegalStateException("فایل قابل خواندن نیست")
+     val length=temp.length()
+     require(length in 1..(25L*1024L*1024L)) { "حجم فایل باید بین ۱ بایت تا ۲۵ مگابایت باشد." }
+     connection.setFixedLengthStreamingMode(length)
+     temp.inputStream().use { input ->
+      connection.outputStream.use { output ->
+       val buffer=ByteArray(16*1024)
+       while(true) { val n=input.read(buffer); if(n<0) break; output.write(buffer,0,n) }
+      }
      }
-    } ?: throw IllegalStateException("فایل قابل خواندن نیست")
+    } finally { temp.delete() }
     val code=connection.responseCode
     val stream=if(code in 200..299) connection.inputStream else connection.errorStream
     val response=stream?.bufferedReader()?.use { it.readText() } ?: ""
@@ -96,9 +103,5 @@ class MainActivity : Activity() {
    result.text="فایل انتخاب شد: $selectedName"
   }
  }
- private fun findSendButtonEnable() {
-  // The send button is the fourth button in the screen's main layout.
-  val root=(findViewById<ScrollView>(android.R.id.content).getChildAt(0) as? LinearLayout)
-  (root?.getChildAt(5) as? Button)?.isEnabled=true
- }
+ private fun findSendButtonEnable() { sendButton.isEnabled=true }
 }
